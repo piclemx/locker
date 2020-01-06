@@ -17,3 +17,10 @@ jobs:
     steps:
       - checkout
       - run: curl -sL https://git.io/goreleaser | bash
+  build:
+    docker:
+      - image: circleci/golang:1.13
+    steps:
+      - checkout
+      - run: go get -v -t -d ./...
+      - run: go test -race
