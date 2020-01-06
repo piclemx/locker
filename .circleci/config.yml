@@ -4,7 +4,7 @@ workflows:
   main:
     jobs:
       - build
-      - release:g
+      - release:
           # Only run this job on git tag pushes
           filters:
             branches:
