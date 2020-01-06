@@ -3,7 +3,10 @@ version: 2.1
 workflows:
   main:
     jobs:
+      - build
       - release:
+          requires:
+            - build
           # Only run this job on git tag pushes
           filters:
             branches:
