@@ -27,18 +27,15 @@ import (
 
 
 var cfgFile string
+var region string
+var tableName string
 
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
   Use:   "locker",
-  Short: "A brief description of your application",
-  Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+  Short: "Locker make easy to create some kind of lock",
+  Long: `Locker make easy to manipulate locks for other command line tools.`,
   // Uncomment the following line if your bare application
   // has an action associated with it:
   //	Run: func(cmd *cobra.Command, args []string) { },
@@ -61,6 +58,8 @@ func init() {
   // will be global for your application.
 
   rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.locker.yaml)")
+  rootCmd.PersistentFlags().StringVar(&region, "region", "us-east-1", "AWS region")
+  rootCmd.PersistentFlags().StringVar(&tableName, "tableName", "locks", "Table name where locks are stored")
 
 
   // Cobra also supports local flags, which will only run

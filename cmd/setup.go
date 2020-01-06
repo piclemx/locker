@@ -17,7 +17,6 @@ package cmd
 
 import (
 	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -33,6 +32,21 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("setup called")
+
+		// Will be done later.
+		//svc := dynamodb.New(session.Must(session.NewSession(&aws.Config{
+		//		//	Region: aws.String("us-west-2"),
+		//		//})))
+		//		//c, err := dynamolock.New(svc,
+		//		//	"locks",
+		//		//	dynamolock.WithLeaseDuration(3*time.Second),
+		//		//	dynamolock.WithHeartbeatPeriod(1*time.Second),
+		//		//)
+		//		//if err != nil {
+		//		//	log.Fatal(err)
+		//		//}
+		//		//defer c.Close()
+
 	},
 }
 

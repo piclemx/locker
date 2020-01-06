@@ -16,23 +16,67 @@ limitations under the License.
 package cmd
 
 import (
+	"cirello.io/dynamolock"
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"log"
+	"time"
 
 	"github.com/spf13/cobra"
 )
 
+var unlockKey string
+var unlockOwner string
+
 // unlockCmd represents the unlock command
 var unlockCmd = &cobra.Command{
 	Use:   "unlock",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Unlock the given lock item",
+	Long:  `Unlock the given lock item if the item is still their otherwise return`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("unlock called")
+
+		region, err := rootCmd.PersistentFlags().GetString("region")
+
+		if err != nil {
+			fmt.Println("Unable to set the region")
+		}
+
+		if unlockOwner == "" {
+			log.Fatalln("The owner should be set")
+		}
+
+		svc := dynamodb.New(session.Must(session.NewSession(&aws.Config{
+			Region: aws.String(region),
+		})))
+		c, err := dynamolock.New(svc,
+			"locks",
+			dynamolock.WithLeaseDuration(3*time.Second),
+			dynamolock.WithHeartbeatPeriod(1*time.Second),
+			dynamolock.WithOwnerName(unlockOwner),
+		)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer c.Close()
+
+		lockedItem, lockErr := c.Get(unlockKey)
+
+		if lockErr != nil {
+			fmt.Println(lockErr.Error())
+		}
+
+		log.Println("cleaning lock")
+		success, err := c.ReleaseLock(lockedItem)
+		if !success {
+			log.Fatal("lost lock before release")
+		}
+		if err != nil {
+			log.Fatal("error releasing lock:", err)
+		}
+		log.Println("done")
 	},
 }
 
@@ -48,4 +92,6 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// unlockCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	unlockCmd.Flags().StringVarP(&unlockKey, "key", "k", "", "Key of the lock")
+	unlockCmd.Flags().StringVarP(&unlockOwner, "owner", "o", "", "Owner of the lock")
 }
