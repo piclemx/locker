@@ -138,7 +138,6 @@ func createTable(client *dynamolock.Client, tableName string) error {
 
 func dialDynamoDB(tableName string) (*dynamolock.Client, error) {
 	svc := dynamodb.New(session.Must(session.NewSession(&aws.Config{
-		LogLevel: aws.LogLevel(aws.LogDebug),
 		Region: aws.String(region),
 	})))
 
