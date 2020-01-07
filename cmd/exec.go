@@ -22,14 +22,14 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/spf13/cobra"
 	"golang.org/x/xerrors"
 	"os"
 	"os/exec"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
-
-	"github.com/spf13/cobra"
 )
 
 var lockTimeout time.Duration
@@ -62,7 +62,11 @@ var execCmd = &cobra.Command{
 	Long: `This command make it possible to lock before executing the command. After the command has successfully finish it will released the lock`,
 	Run: func(cmd *cobra.Command, args []string) {
 		lockName := args[0]
+		ui.Info("Lock name"+ lockName)
+
 		command := args[1:]
+
+		ui.Info("Command: " + strings.Join(command, " "))
 
 		client, err := dialDynamoDB(tableName)
 		if err != nil {
@@ -82,7 +86,7 @@ var execCmd = &cobra.Command{
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 		trap := make(chan os.Signal, 1)
-		signal.Notify(trap, os.Interrupt, os.Kill, syscall.SIGTERM)
+		signal.Notify(trap, os.Interrupt, syscall.SIGTERM)
 		go func() {
 			<-trap
 			cancel()
@@ -134,8 +138,11 @@ func createTable(client *dynamolock.Client, tableName string) error {
 
 func dialDynamoDB(tableName string) (*dynamolock.Client, error) {
 	svc := dynamodb.New(session.Must(session.NewSession(&aws.Config{
+		LogLevel: aws.LogLevel(aws.LogDebug),
 		Region: aws.String(region),
 	})))
+
+
 
 	client, err := dynamolock.New(svc,
 		tableName,
